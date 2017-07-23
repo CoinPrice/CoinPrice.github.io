@@ -10,7 +10,6 @@ var coinApp = angular.module('coinApp', []);
 
     kpremiumController.$inject = ['$scope', '$http', '$interval'];
     function kpremiumController($scope, $http, $interval) {
-		$scope.usdkrw = 1125;
 		$scope.coinone = {};
 		$scope.poloniex = {};
 		$scope.poloniex_usdt = {};
@@ -22,6 +21,18 @@ var coinApp = angular.module('coinApp', []);
 				function(response)
 				{
 					$scope.coinone[currency] = response.data.last;
+				});
+		}
+
+		function getUSDRate(){
+			var proxy_url = "https://galvanize-cors-proxy.herokuapp.com/"
+			var suburl = 'https://api.manana.kr/exchange/rate/KRW/USD.json'
+			var url = proxy_url + suburl;
+			$http.get(url).then(
+				function(response)
+				{
+					console.log(response.data[0]);
+					$scope.krw_usd = response.data[0].rate;
 				});
 		}
 		
@@ -123,7 +134,7 @@ var coinApp = angular.module('coinApp', []);
 				price = $scope.coinone[currency];
 			if(market =='bithumb')
 				price = $scope.bithumb[currency];
-			var diff = price - $scope.poloniex_usdt[currency] * $scope.usdkrw * 1.01;
+			var diff = price - $scope.poloniex_usdt[currency] * $scope.krw_usd * 1.00;
 			var p = 100 * diff / price;
 			return p;
 		}
@@ -157,6 +168,7 @@ var coinApp = angular.module('coinApp', []);
 
 
 		function load_data(){
+			getUSDRate();
 			angular.forEach($scope.currency_types, getCoinonePrice);
 			angular.forEach($scope.poloniex_currency, getPoloniexPrice);
 			angular.forEach($scope.bithumb_currency, getPoloniexPriceUSDT);
